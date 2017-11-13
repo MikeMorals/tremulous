@@ -51,7 +51,7 @@ int		vm_debugLevel;
 static int forced_unload;
 
 #define	MAX_VM		3
-vm_t	vmTable[MAX_VM];
+static vm_t vmTable[MAX_VM];
 
 
 void VM_VmInfo_f( void );
@@ -77,9 +77,9 @@ VM_Init
 ==============
 */
 void VM_Init( void ) {
-	Cvar_Get( "vm_cgame", "2", CVAR_ARCHIVE );	// !@# SHIP WITH SET TO 2
-	Cvar_Get( "vm_game", "2", CVAR_ARCHIVE );	// !@# SHIP WITH SET TO 2
-	Cvar_Get( "vm_ui", "2", CVAR_ARCHIVE );		// !@# SHIP WITH SET TO 2
+	Cvar_Get( "vm_cgame", "0", CVAR_ARCHIVE );	// !@# SHIP WITH SET TO 2
+	Cvar_Get( "vm_game", "0", CVAR_ARCHIVE );	// !@# SHIP WITH SET TO 2
+	Cvar_Get( "vm_ui", "0", CVAR_ARCHIVE );		// !@# SHIP WITH SET TO 2
 
 	Cmd_AddCommand ("vmprofile", VM_VmProfile_f );
 	Cmd_AddCommand ("vminfo", VM_VmInfo_f );
@@ -778,7 +778,7 @@ void *VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue ) {
 
 	// currentVM is missing on reconnect here as well?
 	if ( currentVM==NULL )
-	  return NULL;
+	  return (void*)intValue;
 
 	//
 	if ( vm->entryPoint ) {

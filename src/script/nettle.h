@@ -25,6 +25,8 @@
 
 #include <iostream>
 
+#define LUA_BUILD_AS_DLL
+#define LUA_CORE
 #include "lua.hpp"
 #include "sol.hpp"
 

@@ -125,7 +125,7 @@ static bool IN_IsConsoleKey( keyNum_t key, int character )
 	{
 		char *text_p, *token;
 
-		cl_consoleKeys->modified = qfalse;
+		cl_consoleKeys->modified = false;
 		text_p = cl_consoleKeys->string;
 		numConsoleKeys = 0;
 
@@ -408,7 +408,7 @@ static void IN_ActivateMouse( void )
                 SDL_SetRelativeMouseMode( SDL_TRUE  );
                 SDL_SetWindowGrab( SDL_window, SDL_TRUE );
             }
-			in_nograb->modified = qfalse;
+			in_nograb->modified = false;
 		}
 	}
 
