@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cmd.c -- Quake script command processing module
 
 #include "cmd.h"
+#include "CmdParser.h"
 
 #include "autocomplete.h"
 #include "cvar.h"
@@ -36,6 +37,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	MAX_CMD_BUFFER  128*1024
 #define	MAX_CMD_LINE	1024
+
+Parser parser;
 
 typedef struct {
 	byte	*data;
@@ -363,7 +366,7 @@ Just prints the rest of the line to the console
 */
 void Cmd_Echo_f (void)
 {
-	Com_Printf ("%s\n", Cmd_Args());
+	Com_Printf("%s\n", Cmd_Args());
 }
 
 
@@ -386,8 +389,9 @@ struct cmd_function_t
 
 typedef struct cmdContext_s
 {
-	int		argc;
-	char	*argv[ MAX_STRING_TOKENS ];	// points into cmd.tokenized
+	int	argc;
+    const char* argv[24];
+	//char	*argv[ MAX_STRING_TOKENS ];	// points into cmd.tokenized
 	char	tokenized[ BIG_INFO_STRING + MAX_STRING_TOKENS ];	// will have 0 bytes inserted
 	char	cmd[ BIG_INFO_STRING ]; // the original command we received (no token processing)
 } cmdContext_t;
@@ -430,10 +434,11 @@ int		Cmd_Argc( void ) {
 Cmd_Argv
 ============
 */
-const char* Cmd_Argv( int arg ) {
-	if ( arg >= cmd.argc ) {
-		return (char*)"\0";
-	}
+const char* Cmd_Argv( int arg )
+{
+	if ( arg >= cmd.argc )
+		return "\0";
+
 	return cmd.argv[arg];	
 }
 
@@ -445,7 +450,8 @@ The interpreted versions use this because
 they can't have pointers returned to them
 ============
 */
-void	Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength ) {
+void Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength )
+{
 	Q_strncpyz( buffer, Cmd_Argv( arg ), bufferLength );
 }
 
@@ -457,16 +463,16 @@ Cmd_Args
 Returns a single string containing argv(1) to argv(argc()-1)
 ============
 */
-char	*Cmd_Args( void ) {
-	static	char		cmd_args[MAX_STRING_CHARS];
-	int		i;
+char *Cmd_Args( void )
+{
+	static char cmd_args[MAX_STRING_CHARS];
 
 	cmd_args[0] = 0;
-	for ( i = 1 ; i < cmd.argc ; i++ ) {
+	for ( int i = 1 ; i < cmd.argc ; i++ )
+    {
 		strcat( cmd_args, cmd.argv[i] );
-		if ( i != cmd.argc-1 ) {
+		if (i != cmd.argc - 1)
 			strcat( cmd_args, " " );
-		}
 	}
 
 	return cmd_args;
@@ -504,7 +510,8 @@ The interpreted versions use this because
 they can't have pointers returned to them
 ============
 */
-void	Cmd_ArgsBuffer( char *buffer, int bufferLength ) {
+void Cmd_ArgsBuffer( char *buffer, int bufferLength )
+{
 	Q_strncpyz( buffer, Cmd_Args(), bufferLength );
 }
 
@@ -516,7 +523,8 @@ The interpreted versions use this because
 they can't have pointers returned to them
 ============
 */
-void	Cmd_LiteralArgsBuffer( char *buffer, int bufferLength ) {
+void Cmd_LiteralArgsBuffer( char *buffer, int bufferLength )
+{
 	Q_strncpyz( buffer, cmd.cmd, bufferLength );
 }
 
@@ -546,14 +554,10 @@ will point into this temporary buffer.
 */
 // NOTE TTimo define that to track tokenization issues
 //#define TKN_DBG
-static void Cmd_TokenizeString2( const char *text_in, bool ignoreQuotes ) {
+void Cmd_TokenizeString2( const char *text_in, bool ignoreQuotes )
+{
 	const char	*text;
 	char	*textOut;
-
-#ifdef TKN_DBG
-  // FIXME TTimo blunt hook to try to find the tokenization of userinfo
-  Com_DPrintf("Cmd_TokenizeString: %s\n", text_in);
-#endif
 
 	// clear previous args
 	cmd.argc = 0;
@@ -646,7 +650,6 @@ static void Cmd_TokenizeString2( const char *text_in, bool ignoreQuotes ) {
 			return;		// all tokens parsed
 		}
 	}
-	
 }
 
 /*
@@ -654,8 +657,23 @@ static void Cmd_TokenizeString2( const char *text_in, bool ignoreQuotes ) {
 Cmd_TokenizeString
 ============
 */
-void Cmd_TokenizeString( const char *text_in ) {
-	Cmd_TokenizeString2( text_in, false );
+void Cmd_TokenizeString(const char *text)
+{
+	cmd.argc = 0;
+	cmd.cmd[0] = '\0';
+
+	if (!text) return;
+
+	Q_strncpyz(cmd.cmd, text, sizeof(cmd.cmd));
+
+    Args& args = parser.Parse(text); 
+    cmd.argc = args.size();
+    for (int i = 0; i < args.size(); ++i )
+    {
+        cmd.argv[i] = args[i].c_str();
+        if (cmd.argv[i][0] == '$')
+            cmd.argv[i] = Cvar_VariableString(&cmd.argv[i][1]);
+    }
 }
 
 /*
@@ -831,11 +849,13 @@ Cmd_ExecuteString
 A complete command line has been parsed, so try to execute it
 ============
 */
-void	Cmd_ExecuteString( const char *text ) {	
+void Cmd_ExecuteString( const char *text ) 
+{	
 	cmd_function_t	*cmdFunc, **prev;
 
 	// execute the command line
 	Cmd_TokenizeString( text );		
+
 	if ( !Cmd_Argc() ) {
 		return;		// no tokens
 	}
