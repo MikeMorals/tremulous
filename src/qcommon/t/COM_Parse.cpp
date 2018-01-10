@@ -11,84 +11,79 @@
 void Com_Error( int level, const char *error, ... ) { exit(0); }
 void Com_Printf( const char *msg, ... ) {}
 
-namespace {
-    struct Deleter {
-        void operator()(char* p) { ::free(p); }
-    };
-    using Tu = std::unique_ptr<char, Deleter>;
-    std::ostream& operator<<(std::ostream& os, Tu& up) {
-        os << up.get();
-        return os;
-    }
-}
-
-static inline Tu _strdup(std::string s) {
-    return Tu { ::strdup(s.c_str()) };
-}
-
-TEST_CASE("test")
+TEST_CASE("shader test")
 {
-    auto input = _strdup(R"(test)").get();
-    std::string token = COM_Parse(&input);
-    REQUIRE(token == "test");
-}
-
-TEST_CASE("test1 test2")
+    char* input = strdup(R"(
+ui/assets/neutral/squad_h
 {
-    auto input = _strdup(R"(test1 test2)").get();
+  nopicmip
+  {
+    map ui/assets/neutral/squad_h.tga
+		blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+		rgbgen vertex
+  }
+})");
+    char* save = input;
 
-    std::string token;
-    token = COM_Parse(&input);
-    REQUIRE(token == "test1");
+    char* token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "ui/assets/neutral/squad_h"));
 
     token = COM_Parse(&input);
-    REQUIRE(token == "test2");
+    REQUIRE(!strcmp(token, "{"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "nopicmip"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "{"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "map"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "ui/assets/neutral/squad_h.tga"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "blendFunc"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "GL_SRC_ALPHA"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "GL_ONE_MINUS_SRC_ALPHA"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "rgbgen"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "vertex"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "}"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "}"));
+
+    free(save);
 }
 
-TEST_CASE(R"(a "b")")
+TEST_CASE("if statement")
 {
-    auto input = _strdup(R"(a "b")").get();
+    char* input = strdup(R"(if ( a ))");
+    char* save = input;
 
-    std::string token;
-    token = COM_Parse(&input);
-    REQUIRE(token == R"(a)");
+    char* token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "if"));
 
     token = COM_Parse(&input);
-    REQUIRE(token == R"(b)");
+    REQUIRE(!strcmp(token, "("));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, "a"));
+
+    token = COM_Parse(&input);
+    REQUIRE(!strcmp(token, ")"));
+
+    free(save);
 }
 
-TEST_CASE(R"(a \"b\")")
-{
-    auto input = _strdup(R"(a \"b\")").get();
-
-    std::string token;
-    token = COM_Parse(&input);
-    REQUIRE(token == R"(a)");
-
-    token = COM_Parse(&input);
-    REQUIRE(token == R"(b)");
-}
-
-TEST_CASE(R"(a "\"b\"")")
-{
-    auto input = _strdup(R"(a "\"b\"")").get();
-
-    std::string token;
-    token = COM_Parse(&input);
-    REQUIRE(token == R"(a)");
-
-    token = COM_Parse(&input);
-    REQUIRE(token == R"("b")");
-}
-
-TEST_CASE(R"(a '\"b\"')")
-{
-    auto input = _strdup(R"(a '\"b\"')").get();
-
-    std::string token;
-    token = COM_Parse(&input);
-    REQUIRE(token == R"(a)");
-
-    token = COM_Parse(&input);
-    REQUIRE(token == R"('\"b\"')");
-}

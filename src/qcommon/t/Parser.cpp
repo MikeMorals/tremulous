@@ -10,6 +10,21 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
+TEST_CASE("weird liner")
+{
+    Parser parser;
+    auto args = parser.Parse(R"(/* */)");
+    REQUIRE(args.size() == 2);
+    REQUIRE(args[0] == "/*");
+    REQUIRE(args[1] == "*/");
+}
+
+TEST_CASE("empty oneliner")
+{
+    Parser parser;
+    auto args = parser.Parse(R"(//)");
+    REQUIRE(args.size() == 0);
+}
 
 TEST_CASE("bind test 2")
 {
