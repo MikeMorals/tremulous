@@ -1182,7 +1182,7 @@ ifeq ($(ARCH),x86)
 endif
 endif
 
-GRANGER_CFLAGS += $(ARCHFLAG) -fPIC -fpic $(LUACFLAGS) 
+GRANGER_CFLAGS += $(ARCHFLAG) -fPIC -fpic $(LUACFLAGS) -I$(MOUNT_DIR)
 
 ifeq ($(PLATFORM),darwin)
 GRANGER_CFLAGS += -DLUA_USE_MACOSX
@@ -1194,6 +1194,7 @@ endif
 
 GRANGEROBJ = \
 	$(B)/granger.dir/src/lnettlelib.o \
+	$(B)/granger.dir/src/granger_lauxlib.o \
 	$(B)/granger.dir/src/main.o \
 	$(B)/granger.dir/src/strvec.o \
 	$(B)/granger.dir/src/lua/lapi.o \
