@@ -23,7 +23,7 @@ struct Parser {
             if (!process(ch))
                 continue;
 
-            args.push_back(token);
+            args.emplace_back(token);
             token.clear();
         }
 
@@ -31,7 +31,7 @@ struct Parser {
         process(-1);
 
         if (token.size())
-            args.push_back(token);
+            args.emplace_back(token);
 
         return args;
     }
