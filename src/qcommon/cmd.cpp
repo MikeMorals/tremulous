@@ -40,15 +40,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 Parser parser;
 
-typedef struct {
+struct cmd_t {
 	byte	*data;
 	int		maxsize;
 	int		cursize;
-} cmd_t;
+};
 
 int			cmd_wait;
 cmd_t		cmd_text;
 byte		cmd_text_buf[MAX_CMD_BUFFER];
+
+struct cmd_function_t
+{
+	cmd_function_t	*next;
+	char			*name;
+	xcommand_t		function;
+	completionFunc_t complete;
+};
+
+struct cmdContext_t
+{
+	int	argc;
+	const char *argv[ MAX_STRING_TOKENS ];	// points into cmd.tokenized
+	char	tokenized[ BIG_INFO_STRING + MAX_STRING_TOKENS ];	// will have 0 bytes inserted
+	char	cmd[ BIG_INFO_STRING ]; // the original command we received (no token processing)
+};
+
+static cmdContext_t		cmd;
+static cmdContext_t		savedCmd;
+static cmd_function_t	*cmd_functions;		// possible commands to execute
 
 
 //=============================================================================
@@ -377,28 +397,6 @@ void Cmd_Echo_f (void)
 
 =============================================================================
 */
-
-struct cmd_function_t
-{
-	cmd_function_t	*next;
-	char			*name;
-	xcommand_t		function;
-	completionFunc_t complete;
-};
-
-
-typedef struct cmdContext_s
-{
-	int	argc;
-    const char* argv[24];
-	//char	*argv[ MAX_STRING_TOKENS ];	// points into cmd.tokenized
-	char	tokenized[ BIG_INFO_STRING + MAX_STRING_TOKENS ];	// will have 0 bytes inserted
-	char	cmd[ BIG_INFO_STRING ]; // the original command we received (no token processing)
-} cmdContext_t;
-
-static cmdContext_t		cmd;
-static cmdContext_t		savedCmd;
-static cmd_function_t	*cmd_functions;		// possible commands to execute
 
 /*
 ============
