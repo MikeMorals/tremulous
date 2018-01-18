@@ -2198,7 +2198,6 @@ CGOBJ = \
   $(B)/$(BASEGAME)/cgame/bg_misc.o \
   $(B)/$(BASEGAME)/cgame/bg_pmove.o \
   $(B)/$(BASEGAME)/cgame/bg_slidemove.o \
-  $(B)/$(BASEGAME)/cgame/bg_lib.o \
   $(B)/$(BASEGAME)/cgame/bg_alloc.o \
   $(B)/$(BASEGAME)/cgame/bg_voice.o \
   $(B)/$(BASEGAME)/cgame/cg_consolecmds.o \
@@ -2277,7 +2276,6 @@ endif
 
 GOBJ = \
   $(B)/$(BASEGAME)/game/bg_alloc.o \
-  $(B)/$(BASEGAME)/game/bg_lib.o \
   $(B)/$(BASEGAME)/game/bg_misc.o \
   $(B)/$(BASEGAME)/game/bg_pmove.o \
   $(B)/$(BASEGAME)/game/bg_slidemove.o \
@@ -2359,7 +2357,6 @@ UIOBJ = \
   $(B)/$(BASEGAME)/ui/bg_alloc.o \
   $(B)/$(BASEGAME)/ui/bg_voice.o \
   $(B)/$(BASEGAME)/ui/bg_misc.o \
-  $(B)/$(BASEGAME)/ui/bg_lib.o \
   $(B)/$(BASEGAME)/qcommon/q_math.o \
   $(B)/$(BASEGAME)/qcommon/q_shared.o \
   $(B)/$(BASEGAME)/ui/ui_syscalls.o
